@@ -45,7 +45,7 @@
             background-color: #45a049;
         }
 
-        .info, .ping-result {
+        .info, .ping-result, .tech-info {
             margin-top: 20px;
             background-color: #f9f9f9;
             padding: 10px;
@@ -53,7 +53,7 @@
             border: 1px solid #ddd;
         }
 
-        .info p, .ping-result p {
+        .info p, .ping-result p, .tech-info p {
             margin: 5px 0;
         }
     </style>
@@ -70,6 +70,13 @@
             <p><strong>Hosting Platform:</strong> GitHub Pages</p>
         </div>
 
+        <div class="tech-info" id="techInfo" style="display:none;">
+            <h3>Supported Technologies:</h3>
+            <p><strong>Supports Flask (Python):</strong> <span id="flaskSupport">Checking...</span></p>
+            <p><strong>Supports Node.js:</strong> <span id="nodeSupport">Checking...</span></p>
+            <p><strong>Supports Python on Web:</strong> <span id="pythonSupport">Checking...</span></p>
+        </div>
+
         <div class="ping-result" id="pingResult" style="display:none;">
             <h3>Ping Result:</h3>
             <p id="pingStatus">Pinging...</p>
@@ -80,15 +87,25 @@
         function showInfo() {
             // Show the info about the website
             document.getElementById("info").style.display = "block";
+            document.getElementById("techInfo").style.display = "block";
 
             // Ping the website and display the result
             pingWebsite();
+
+            // Check if Flask is supported
+            checkFlaskSupport();
+
+            // Check if Node.js is supported
+            checkNodeSupport();
+
+            // Check if Python on Web is supported
+            checkPythonSupport();
         }
 
         function pingWebsite() {
             const pingStatusElement = document.getElementById("pingStatus");
             const xhr = new XMLHttpRequest();
-            
+
             xhr.open('GET', window.location.href, true);
             xhr.onload = function() {
                 if (xhr.status === 200) {
@@ -105,6 +122,24 @@
             const startTime = Date.now();
             xhr.setRequestHeader('X-Response-Time', Date.now() - startTime); // Simulate response time header
             xhr.send();
+        }
+
+        function checkFlaskSupport() {
+            const flaskSupportElement = document.getElementById("flaskSupport");
+            // GitHub Pages cannot run Flask or any backend, so return "No"
+            flaskSupportElement.innerText = 'No (GitHub Pages only supports static sites)';
+        }
+
+        function checkNodeSupport() {
+            const nodeSupportElement = document.getElementById("nodeSupport");
+            // GitHub Pages cannot run Node.js directly either, so return "No"
+            nodeSupportElement.innerText = 'No (GitHub Pages only supports static sites)';
+        }
+
+        function checkPythonSupport() {
+            const pythonSupportElement = document.getElementById("pythonSupport");
+            // GitHub Pages cannot run Python backend directly
+            pythonSupportElement.innerText = 'No (GitHub Pages only supports static sites)';
         }
     </script>
 
