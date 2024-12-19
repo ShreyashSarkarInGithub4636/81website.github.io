@@ -3,145 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shreyash's Projects Website</title>
+    <title>QEMU.js Emulator</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f4;
+        #emulator {
+            width: 100%;
+            height: 400px;
+            border: 1px solid #000;
+        }
+        #controls {
             display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            color: #333;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
         }
-
-        .container {
-            text-align: center;
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            width: 80%;
-            max-width: 600px;
+        #controls input[type="text"] {
+            width: 100%;
+            margin-bottom: 5px;
         }
-
-        h1 {
-            color: #4CAF50;
-        }
-
-        button {
-            background-color: #4CAF50;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-top: 20px;
-        }
-
-        button:hover {
-            background-color: #45a049;
-        }
-
-        .info, .ping-result, .tech-info {
-            margin-top: 20px;
-            background-color: #f9f9f9;
+        #controls button {
+            flex: 1;
             padding: 10px;
-            border-radius: 5px;
-            border: 1px solid #ddd;
-        }
-
-        .info p, .ping-result p, .tech-info p {
-            margin: 5px 0;
+            font-size: 14px;
         }
     </style>
 </head>
 <body>
-
-    <div class="container">
-        <h1>Welcome to Shreyash's Projects Website</h1>
-        <button onclick="showInfo()">Show Info</button>
-        
-        <div class="info" id="info" style="display:none;">
-            <h3>Website Information:</h3>
-            <p><strong>Hosted by:</strong> Shreyash Sarkar</p>
-            <p><strong>Hosting Platform:</strong> GitHub Pages</p>
-        </div>
-
-        <div class="tech-info" id="techInfo" style="display:none;">
-            <h3>Supported Technologies:</h3>
-            <p><strong>Supports Flask (Python):</strong> <span id="flaskSupport">Checking...</span></p>
-            <p><strong>Supports Node.js:</strong> <span id="nodeSupport">Checking...</span></p>
-            <p><strong>Supports Python on Web:</strong> <span id="pythonSupport">Checking...</span></p>
-        </div>
-
-        <div class="ping-result" id="pingResult" style="display:none;">
-            <h3>Ping Result:</h3>
-            <p id="pingStatus">Pinging...</p>
-        </div>
+    <div id="emulator"></div>
+    <div id="controls">
+        <input type="text" id="typingInput" placeholder="Typing Input" disabled>
+        <input type="text" id="clipboardInput" placeholder="Clipboard Input">
+        <button id="backspaceBtn">Backspace</button>
+        <button id="delBtn">Del</button>
+        <button id="ctrlBtn">Ctrl</button>
+        <button id="altBtn">Alt</button>
+        <button id="shiftBtn">Shift</button>
+        <button id="capsLockBtn">Caps Lock</button>
+        <button id="powerOffBtn">Power Off</button>
+        <button id="powerOnBtn">Power On</button>
+        <button id="rebootBtn">Reboot</button>
+        <button id="insertIsoBtn">Insert CD/DVD ISO</button>
+        <button id="insertQcow2Btn">Insert .qcow2</button>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/gh/atrosinenko/qemujs/qemu.js"></script>
     <script>
-        function showInfo() {
-            // Show the info about the website
-            document.getElementById("info").style.display = "block";
-            document.getElementById("techInfo").style.display = "block";
+        // Initialize the emulator
+        const emulator = new QEMU.Emulator();
+        emulator.setElement(document.getElementById('emulator'));
+        emulator.start();
 
-            // Ping the website and display the result
-            pingWebsite();
+        // Event listeners for control buttons
+        document.getElementById('backspaceBtn').addEventListener('click', () => emulator.sendKey('Backspace'));
+        document.getElementById('delBtn').addEventListener('click', () => emulator.sendKey('Delete'));
+        document.getElementById('ctrlBtn').addEventListener('click', () => emulator.sendKey('Control'));
+        document.getElementById('altBtn').addEventListener('click', () => emulator.sendKey('Alt'));
+        document.getElementById('shiftBtn').addEventListener('click', () => emulator.sendKey('Shift'));
+        document.getElementById('capsLockBtn').addEventListener('click', () => emulator.sendKey('CapsLock'));
+        document.getElementById('powerOffBtn').addEventListener('click', () => emulator.powerOff());
+        document.getElementById('powerOnBtn').addEventListener('click', () => emulator.powerOn());
+        document.getElementById('rebootBtn').addEventListener('click', () => emulator.reboot());
 
-            // Check if Flask is supported
-            checkFlaskSupport();
+        // Event listeners for inserting media
+        document.getElementById('insertIsoBtn').addEventListener('click', () => {
+            const isoFile = prompt('Enter the path to the ISO file:');
+            if (isoFile) {
+                emulator.insertIso(isoFile);
+            }
+        });
+        document.getElementById('insertQcow2Btn').addEventListener('click', () => {
+            const qcow2File = prompt('Enter the path to the .qcow2 file:');
+            if (qcow2File) {
+                emulator.insertQcow2(qcow2File);
+            }
+        });
 
-            // Check if Node.js is supported
-            checkNodeSupport();
+        // Handle typing input for mobile platforms
+        document.getElementById('typingInput').addEventListener('input', (event) => {
+            const inputText = event.target.value;
+            emulator.sendText(inputText);
+            event.target.value = ''; // Clear the input field
+        });
 
-            // Check if Python on Web is supported
-            checkPythonSupport();
-        }
-
-        function pingWebsite() {
-            const pingStatusElement = document.getElementById("pingStatus");
-            const xhr = new XMLHttpRequest();
-
-            xhr.open('GET', window.location.href, true);
-            xhr.onload = function() {
-                if (xhr.status === 200) {
-                    pingStatusElement.innerText = 'Ping successful! Response time: ' + xhr.getResponseHeader('X-Response-Time') + 'ms';
-                } else {
-                    pingStatusElement.innerText = 'Ping failed. Status code: ' + xhr.status;
-                }
-            };
-            xhr.onerror = function() {
-                pingStatusElement.innerText = 'Error occurred while pinging the website.';
-            };
-
-            // Send the request
-            const startTime = Date.now();
-            xhr.setRequestHeader('X-Response-Time', Date.now() - startTime); // Simulate response time header
-            xhr.send();
-        }
-
-        function checkFlaskSupport() {
-            const flaskSupportElement = document.getElementById("flaskSupport");
-            // GitHub Pages cannot run Flask or any backend, so return "No"
-            flaskSupportElement.innerText = 'No (GitHub Pages only supports static sites)';
-        }
-
-        function checkNodeSupport() {
-            const nodeSupportElement = document.getElementById("nodeSupport");
-            // GitHub Pages cannot run Node.js directly either, so return "No"
-            nodeSupportElement.innerText = 'No (GitHub Pages only supports static sites)';
-        }
-
-        function checkPythonSupport() {
-            const pythonSupportElement = document.getElementById("pythonSupport");
-            // GitHub Pages cannot run Python backend directly
-            pythonSupportElement.innerText = 'No (GitHub Pages only supports static sites)';
-        }
+        // Handle clipboard input for PC and other platforms
+        document.getElementById('clipboardInput').addEventListener('input', (event) => {
+            const inputText = event.target.value;
+            emulator.sendText(inputText);
+        });
     </script>
-
 </body>
 </html>
+
