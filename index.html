@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shreyash's Projects Website</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            text-align: center;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            width: 80%;
+            max-width: 600px;
+        }
+
+        h1 {
+            color: #4CAF50;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .info, .ping-result {
+            margin-top: 20px;
+            background-color: #f9f9f9;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+
+        .info p, .ping-result p {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Welcome to Shreyash's Projects Website</h1>
+        <button onclick="showInfo()">Show Info</button>
+        
+        <div class="info" id="info" style="display:none;">
+            <h3>Website Information:</h3>
+            <p><strong>Hosted by:</strong> Shreyash Sarkar</p>
+            <p><strong>Hosting Platform:</strong> GitHub Pages</p>
+        </div>
+
+        <div class="ping-result" id="pingResult" style="display:none;">
+            <h3>Ping Result:</h3>
+            <p id="pingStatus">Pinging...</p>
+        </div>
+    </div>
+
+    <script>
+        function showInfo() {
+            // Show the info about the website
+            document.getElementById("info").style.display = "block";
+
+            // Ping the website and display the result
+            pingWebsite();
+        }
+
+        function pingWebsite() {
+            const pingStatusElement = document.getElementById("pingStatus");
+            const xhr = new XMLHttpRequest();
+            
+            xhr.open('GET', window.location.href, true);
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    pingStatusElement.innerText = 'Ping successful! Response time: ' + xhr.getResponseHeader('X-Response-Time') + 'ms';
+                } else {
+                    pingStatusElement.innerText = 'Ping failed. Status code: ' + xhr.status;
+                }
+            };
+            xhr.onerror = function() {
+                pingStatusElement.innerText = 'Error occurred while pinging the website.';
+            };
+
+            // Send the request
+            const startTime = Date.now();
+            xhr.setRequestHeader('X-Response-Time', Date.now() - startTime); // Simulate response time header
+            xhr.send();
+        }
+    </script>
+
+</body>
+</html>
