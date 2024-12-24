@@ -23,6 +23,16 @@
         pre { background-color: #f4f4f4; padding: 10px; overflow-x: auto; position: relative; }
         pre button { position: absolute; top: 5px; right: 5px; background-color: #ddd; border: none; padding: 5px 8px; cursor: pointer; font-size: 0.8em; }
          pre button:hover { background-color: #ccc; }
+        #console {
+            background-color: #222;
+            color: #fff;
+            padding: 10px;
+            margin-top: 20px;
+            height: 200px;
+            overflow-y: scroll;
+            font-family: monospace;
+             white-space: pre-wrap; /* Keep text in the same line */
+        }
     </style>
 </head>
 <body>
@@ -39,6 +49,7 @@
    <br>
     <button id="loadPkgGuide">Show Package Creation Guide</button>
    <div id="content-area"></div>
+     <div id="console"></div>
    <script>
          document.getElementById("loadPkgGuide").addEventListener("click", function() {
              fetch("81manpkg.html")
@@ -55,6 +66,23 @@
             (function(){
                emailjs.init("ZDNmcF0bh6MxjlDxZ"); // Your EmailJS user ID
             })();
+
+        // Function to log messages to the console
+      function logToConsole(message) {
+        const consoleDiv = document.getElementById('console');
+          const logEntry = document.createElement('div');
+        logEntry.textContent = message;
+        consoleDiv.appendChild(logEntry);
+         // Scroll to bottom of the log
+         consoleDiv.scrollTop = consoleDiv.scrollHeight;
+        }
+
+      // Override the console.log function to redirect output to the custom console
+      const originalConsoleLog = console.log;
+         console.log = function(message) {
+             originalConsoleLog.apply(console, arguments); // Keep default console logging
+              logToConsole(message);  // Send message to web console.
+        };
         // JavaScript for handling file upload and scanning with VirusTotal and sending via email
         document.getElementById("uploadForm").addEventListener("submit", async (event) => {
             event.preventDefault();
@@ -74,43 +102,48 @@
             }
 
             try {
-                // Prepare the form data for scanning
+                 // Prepare the form data for scanning
                  const formData = new FormData();
-                formData.append("file", file);
+                 formData.append("file", file);
 
                 // Send the file to VirusTotal API for scanning
-                 const scanResponse = await fetch("https://www.virustotal.com/api/v3/files", {
+               const scanResponse = await fetch("https://www.virustotal.com/api/v3/files", {
                    method: "POST",
                     headers: {
-                        "x-apikey": "006aae5c171e351c3a51056e4330136d38812efc6ad13e4d4e45abfee2b9be2a"
+                         "x-apikey": "006aae5c171e351c3a51056e4330136d38812efc6ad13e4d4e45abfee2b9be2a"
                     },
                     body: formData
                 });
                 const scanResult = await scanResponse.json();
+                console.log("Virustotal response:", scanResult);
 
                // Check if the scan was successful
                 if (!scanResult.data || !scanResult.data.attributes) {
                    showErrorMessage("File failed the scan. Scan results: " + JSON.stringify(scanResult));
-                    return;
+                   return;
                 }
 
-                // Send the email using EmailJS
-                 emailjs.send("service_atf8nfq", "template_g2u8qaz", { // Replace with your EmailJS service ID and template ID
-                   to_email: "shreyashmotunew@gmail.com", // Replace with where you want to send the emails
+               // Send the email using EmailJS
+                emailjs.send("service_atf8nfq", "template_g2u8qaz", {
+                  to_email: "shreyashmotunew@gmail.com",
                      from_email: email,
                       file_name: file.name,
-                     file_content: file
+                    file_content: file
                  })
                  .then(function() {
+                       console.log("Email sent successfully");
                       alert("File uploaded successfully and sent to email!");
-                    }, function(error) {
-                          showErrorMessage("Email send failed. Error: " + JSON.stringify(error));
+                   }, function(error) {
+                        showErrorMessage("Email send failed. Error: " + JSON.stringify(error));
+                         console.log("Email failed", error);
                     });
 
 
             } catch (error) {
                 console.error("Error:", error);
                 showErrorMessage("An error occurred during the process. Please try again.");
+                console.log("Upload process failed", error);
+
             }
         });
 
