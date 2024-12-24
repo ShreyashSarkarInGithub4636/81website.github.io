@@ -87,7 +87,7 @@
          }
 
       // Override the console.log function to redirect output to the custom console
-     const originalConsoleLog = console.log;
+      const originalConsoleLog = console.log;
         console.log = function(message) {
             originalConsoleLog.apply(console, arguments); // Keep default console logging
             logToConsole(message);  // Send message to web console.
@@ -131,29 +131,30 @@
                // Check if the scan was successful
                  if (!scanResult.data || !scanResult.data.attributes) {
                     showErrorMessage("File failed the scan. Scan results: " + JSON.stringify(scanResult));
+                      console.log("Virustotal failed:", scanResult); // Log failed scan result
                      return;
                  }
                 // Send the email using EmailJS
                  emailjs.send("service_atf8nfq", "template_g2u8qaz", {
                      to_email: "shreyashmotunew@gmail.com",
                      from_email: email,
-                    file_name: file.name,
-                    file_content: file
+                      file_name: file.name,
+                     file_content: file
                  })
                  .then(function() {
                        console.log("Email sent successfully");
                         alert("File uploaded successfully and sent to email!");
-                    }, function(error) {
+                   }, function(error) {
                        showErrorMessage("Email send failed. Error: " + JSON.stringify(error));
-                      console.log("Email failed", error);
+                       console.log("Email failed", error); // Log EmailJS error
                    });
 
 
             } catch (error) {
                 console.error("Error:", error);
                 showErrorMessage("An error occurred during the process. Please try again.");
-                console.log("Upload process failed", error);
-
+                console.log("Upload process failed", error); // Log the error
+                  console.log("Detailed error:", error); // Log the full error
             }
         });
 
