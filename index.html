@@ -3,93 +3,115 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QEMU.js Emulator</title>
+    <title>Upload .pkg File</title>
     <style>
-        #emulator {
-            width: 100%;
-            height: 400px;
-            border: 1px solid #000;
-        }
-        #controls {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 10px;
-        }
-        #controls input[type="text"] {
-            width: 100%;
-            margin-bottom: 5px;
-        }
-        #controls button {
-            flex: 1;
-            padding: 10px;
-            font-size: 14px;
+        /* Style for the error message box */
+        .error-box {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-size: 16px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+            max-width: 90%;
+            margin-left: 5%;
         }
     </style>
 </head>
 <body>
-    <div id="emulator"></div>
-    <div id="controls">
-        <input type="text" id="typingInput" placeholder="Typing Input" disabled>
-        <input type="text" id="clipboardInput" placeholder="Clipboard Input">
-        <button id="backspaceBtn">Backspace</button>
-        <button id="delBtn">Del</button>
-        <button id="ctrlBtn">Ctrl</button>
-        <button id="altBtn">Alt</button>
-        <button id="shiftBtn">Shift</button>
-        <button id="capsLockBtn">Caps Lock</button>
-        <button id="powerOffBtn">Power Off</button>
-        <button id="powerOnBtn">Power On</button>
-        <button id="rebootBtn">Reboot</button>
-        <button id="insertIsoBtn">Insert CD/DVD ISO</button>
-        <button id="insertQcow2Btn">Insert .qcow2</button>
-    </div>
+    <h1>Upload Your .pkg File</h1>
+    <form id="uploadForm">
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" required>
+        <br><br>
+        <label for="pkgFile">Select .pkg file:</label>
+        <input type="file" id="pkgFile" name="pkgFile" accept=".pkg" required>
+        <br><br>
+        <button type="submit">Upload</button>
+    </form>
+    <br>
+    <a href="81pkgman.html">How to upload package files to 81pkg repo</a>
 
-    <script src="https://cdn.jsdelivr.net/gh/atrosinenko/qemujs/qemu.js"></script>
     <script>
-        // Initialize the emulator
-        const emulator = new QEMU.Emulator();
-        emulator.setElement(document.getElementById('emulator'));
-        emulator.start();
+        // JavaScript for handling file upload and scanning with VirusTotal
+        document.getElementById("uploadForm").addEventListener("submit", async (event) => {
+            event.preventDefault();
 
-        // Event listeners for control buttons
-        document.getElementById('backspaceBtn').addEventListener('click', () => emulator.sendKey('Backspace'));
-        document.getElementById('delBtn').addEventListener('click', () => emulator.sendKey('Delete'));
-        document.getElementById('ctrlBtn').addEventListener('click', () => emulator.sendKey('Control'));
-        document.getElementById('altBtn').addEventListener('click', () => emulator.sendKey('Alt'));
-        document.getElementById('shiftBtn').addEventListener('click', () => emulator.sendKey('Shift'));
-        document.getElementById('capsLockBtn').addEventListener('click', () => emulator.sendKey('CapsLock'));
-        document.getElementById('powerOffBtn').addEventListener('click', () => emulator.powerOff());
-        document.getElementById('powerOnBtn').addEventListener('click', () => emulator.powerOn());
-        document.getElementById('rebootBtn').addEventListener('click', () => emulator.reboot());
+            const email = document.getElementById("email").value;
+            const fileInput = document.getElementById("pkgFile");
+            const file = fileInput.files[0];
 
-        // Event listeners for inserting media
-        document.getElementById('insertIsoBtn').addEventListener('click', () => {
-            const isoFile = prompt('Enter the path to the ISO file:');
-            if (isoFile) {
-                emulator.insertIso(isoFile);
+            if (!file) {
+                alert("Please select a .pkg file to upload.");
+                return;
+            }
+
+            if (file.type !== "" && !file.name.endsWith(".pkg")) {
+                alert("Only .pkg files are allowed.");
+                return;
+            }
+
+            try {
+                // Prepare the form data for scanning
+                const formData = new FormData();
+                formData.append("file", file);
+
+                // Send the file to VirusTotal API for scanning
+                const scanResponse = await fetch("https://www.virustotal.com/api/v3/files", {
+                    method: "POST",
+                    headers: {
+                        "x-apikey": "006aae5c171e351c3a51056e4330136d38812efc6ad13e4d4e45abfee2b9be2a"
+                    },
+                    body: formData
+                });
+
+                const scanResult = await scanResponse.json();
+
+                // Check if the scan was successful
+                if (!scanResult.data || !scanResult.data.attributes) {
+                    showErrorMessage("File failed the scan. Scan results: " + JSON.stringify(scanResult));
+                    return;
+                }
+
+                // If the file passed the scan, proceed to upload
+                const uploadFormData = new FormData();
+                uploadFormData.append("email", email);
+                uploadFormData.append("file", file);
+
+                const uploadResponse = await fetch("https://yourserver.com/upload_url/pending", {
+                    method: "POST",
+                    body: uploadFormData
+                });
+
+                const uploadResult = await uploadResponse.json();
+
+                if (uploadResult.success) {
+                    alert("File uploaded successfully to the pending directory.");
+                } else {
+                    showErrorMessage("File upload failed. Server error: " + JSON.stringify(uploadResult));
+                }
+            } catch (error) {
+                console.error("Error:", error);
+                showErrorMessage("An error occurred during the process. Please try again.");
             }
         });
-        document.getElementById('insertQcow2Btn').addEventListener('click', () => {
-            const qcow2File = prompt('Enter the path to the .qcow2 file:');
-            if (qcow2File) {
-                emulator.insertQcow2(qcow2File);
-            }
-        });
 
-        // Handle typing input for mobile platforms
-        document.getElementById('typingInput').addEventListener('input', (event) => {
-            const inputText = event.target.value;
-            emulator.sendText(inputText);
-            event.target.value = ''; // Clear the input field
-        });
+        // Function to show error messages in a styled error box
+        function showErrorMessage(message) {
+            const errorBox = document.createElement("div");
+            errorBox.classList.add("error-box");
+            errorBox.textContent = message;
 
-        // Handle clipboard input for PC and other platforms
-        document.getElementById('clipboardInput').addEventListener('input', (event) => {
-            const inputText = event.target.value;
-            emulator.sendText(inputText);
-        });
+            // Append the error box to the body or a specific container
+            document.body.appendChild(errorBox);
+            
+            // Automatically remove the error box after a few seconds
+            setTimeout(() => {
+                errorBox.remove();
+            }, 5000);
+        }
     </script>
 </body>
 </html>
-
