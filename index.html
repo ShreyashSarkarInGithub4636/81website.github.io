@@ -18,6 +18,11 @@
             max-width: 90%;
             margin-left: 5%;
         }
+         body { font-family: sans-serif; margin: 20px; }
+        #content-area { margin-top: 20px; border: 1px solid #ccc; padding: 10px;}
+        pre { background-color: #f4f4f4; padding: 10px; overflow-x: auto; position: relative; }
+        pre button { position: absolute; top: 5px; right: 5px; background-color: #ddd; border: none; padding: 5px 8px; cursor: pointer; font-size: 0.8em; }
+         pre button:hover { background-color: #ccc; }
     </style>
 </head>
 <body>
@@ -31,11 +36,26 @@
         <br><br>
         <button type="submit">Upload</button>
     </form>
-    <br>
-    <a href="81pkgman.html">How to upload package files to 81pkg repo</a>
-
-    <script>
-        // JavaScript for handling file upload and scanning with VirusTotal
+   <br>
+    <button id="loadPkgGuide">Show Package Creation Guide</button>
+   <div id="content-area"></div>
+   <script>
+         document.getElementById("loadPkgGuide").addEventListener("click", function() {
+             fetch("81manpkg.html")
+                .then(response => response.text())
+                .then(data => {
+                   document.getElementById("content-area").innerHTML = data;
+                 })
+             .catch(error => console.error("Error fetching the package guide:", error));
+          });
+    </script>
+     <script src="https://cdn.jsdelivr.net/npm/emailjs-com@2/dist/email.min.js"></script>
+     <script>
+           // EmailJS Initialization
+            (function(){
+               emailjs.init("ZDNmcF0bh6MxjlDxZ"); // Your EmailJS user ID
+            })();
+        // JavaScript for handling file upload and scanning with VirusTotal and sending via email
         document.getElementById("uploadForm").addEventListener("submit", async (event) => {
             event.preventDefault();
 
@@ -55,43 +75,39 @@
 
             try {
                 // Prepare the form data for scanning
-                const formData = new FormData();
+                 const formData = new FormData();
                 formData.append("file", file);
 
                 // Send the file to VirusTotal API for scanning
-                const scanResponse = await fetch("https://www.virustotal.com/api/v3/files", {
-                    method: "POST",
+                 const scanResponse = await fetch("https://www.virustotal.com/api/v3/files", {
+                   method: "POST",
                     headers: {
                         "x-apikey": "006aae5c171e351c3a51056e4330136d38812efc6ad13e4d4e45abfee2b9be2a"
                     },
                     body: formData
                 });
-
                 const scanResult = await scanResponse.json();
 
-                // Check if the scan was successful
+               // Check if the scan was successful
                 if (!scanResult.data || !scanResult.data.attributes) {
-                    showErrorMessage("File failed the scan. Scan results: " + JSON.stringify(scanResult));
+                   showErrorMessage("File failed the scan. Scan results: " + JSON.stringify(scanResult));
                     return;
                 }
 
-                // If the file passed the scan, proceed to upload
-                const uploadFormData = new FormData();
-                uploadFormData.append("email", email);
-                uploadFormData.append("file", file);
+                // Send the email using EmailJS
+                 emailjs.send("service_atf8nfq", "template_g2u8qaz", { // Replace with your EmailJS service ID and template ID
+                   to_email: "shreyashmotunew@gmail.com", // Replace with where you want to send the emails
+                     from_email: email,
+                      file_name: file.name,
+                     file_content: file
+                 })
+                 .then(function() {
+                      alert("File uploaded successfully and sent to email!");
+                    }, function(error) {
+                          showErrorMessage("Email send failed. Error: " + JSON.stringify(error));
+                    });
 
-                const uploadResponse = await fetch("https://yourserver.com/upload_url/pending", {
-                    method: "POST",
-                    body: uploadFormData
-                });
 
-                const uploadResult = await uploadResponse.json();
-
-                if (uploadResult.success) {
-                    alert("File uploaded successfully to the pending directory.");
-                } else {
-                    showErrorMessage("File upload failed. Server error: " + JSON.stringify(uploadResult));
-                }
             } catch (error) {
                 console.error("Error:", error);
                 showErrorMessage("An error occurred during the process. Please try again.");
@@ -104,14 +120,29 @@
             errorBox.classList.add("error-box");
             errorBox.textContent = message;
 
-            // Append the error box to the body or a specific container
+           // Append the error box to the body or a specific container
             document.body.appendChild(errorBox);
-            
-            // Automatically remove the error box after a few seconds
+
+           // Automatically remove the error box after a few seconds
             setTimeout(() => {
                 errorBox.remove();
-            }, 5000);
+           }, 5000);
         }
     </script>
+ <script>
+          function copyCode(elementId, button) {
+            const codeElement = document.getElementById(elementId);
+            const codeText = codeElement.innerText;
+
+              navigator.clipboard.writeText(codeText)
+                .then(() => {
+                   button.textContent = 'Copied!';
+                   setTimeout(() => {
+                      button.textContent = 'Copy';
+                      }, 2000);
+                  })
+             .catch(err => console.error('Failed to copy code:', err));
+              }
+      </script>
 </body>
 </html>
