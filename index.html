@@ -6,30 +6,17 @@
     <title>Upload .pkg File</title>
     <style>
         /* Style for the error message box */
-        .error-box {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-            padding: 15px;
-            margin: 10px 0;
-            border-radius: 5px;
-            font-size: 16px;
-            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
-            max-width: 90%;
-            margin-left: 5%;
-        }
-         body { font-family: sans-serif; margin: 20px; }
+        body { font-family: sans-serif; margin: 20px; }
         #content-area { margin-top: 20px; border: 1px solid #ccc; padding: 10px;}
         pre { background-color: #f4f4f4; padding: 10px; overflow-x: auto; position: relative; }
         pre button { position: absolute; top: 5px; right: 5px; background-color: #ddd; border: none; padding: 5px 8px; cursor: pointer; font-size: 0.8em; }
-         pre button:hover { background-color: #ccc; }
+        pre button:hover { background-color: #ccc; }
         #console-iframe {
-             width: 100%; /* Full width */
-             height: 300px; /* Fixed height for the console */
-             border: 1px solid #ccc; /* Add a border */
-             margin-top: 20px;  /* Add some top margin */
-         }
-
+            width: 100%; /* Full width */
+            height: 300px; /* Fixed height for the console */
+            border: 1px solid #ccc; /* Add a border */
+            margin-top: 20px;  /* Add some top margin */
+        }
     </style>
 </head>
 <body>
@@ -46,53 +33,59 @@
    <br>
     <button id="loadPkgGuide">Show Package Creation Guide</button>
    <div id="content-area"></div>
-     <iframe id="console-iframe"></iframe>
-   <script>
-         document.getElementById("loadPkgGuide").addEventListener("click", function() {
-             fetch("81manpkg.html")
+   <iframe id="console-iframe"></iframe>
+
+    <script>
+        document.getElementById("loadPkgGuide").addEventListener("click", function() {
+            fetch("81manpkg.html")
                 .then(response => response.text())
                 .then(data => {
-                   document.getElementById("content-area").innerHTML = data;
-                 })
-             .catch(error => console.error("Error fetching the package guide:", error));
-          });
-    </script>
-     <script src="https://cdn.jsdelivr.net/npm/emailjs-com@2/dist/email.min.js"></script>
-     <script>
-          // EmailJS Initialization
-            (function(){
-               emailjs.init("ZDNmcF0bh6MxjlDxZ"); // Your EmailJS user ID
-            })();
+                    document.getElementById("content-area").innerHTML = data;
+                })
+                .catch(error => console.error("Error fetching the package guide:", error));
+        });
 
-       // Get the iframe for the console
+        // Get the iframe for the console
         const consoleIframe = document.getElementById('console-iframe');
-          // Create a document object for the iframe
+        // Create a document object for the iframe
         const consoleDoc = consoleIframe.contentDocument || consoleIframe.contentWindow.document;
 
         // Set up the iframe document
-       consoleDoc.body.style.backgroundColor = '#222';
+        consoleDoc.body.style.backgroundColor = '#222';
         consoleDoc.body.style.color = '#fff';
-       consoleDoc.body.style.fontFamily = 'monospace';
-       consoleDoc.body.style.padding = '10px';
+        consoleDoc.body.style.fontFamily = 'monospace';
+        consoleDoc.body.style.padding = '10px';
         consoleDoc.body.style.overflowY = 'scroll';
-         consoleDoc.body.style.whiteSpace = 'pre-wrap';
+        consoleDoc.body.style.whiteSpace = 'pre-wrap';
 
-    // Function to log messages to the console
-       function logToConsole(message) {
-           const logEntry = document.createElement('div');
-          logEntry.textContent = message;
-           consoleDoc.body.appendChild(logEntry);
+        // Function to log messages to the console
+        function logToConsole(message) {
+            const logEntry = document.createElement('div');
+            logEntry.textContent = message;
+            consoleDoc.body.appendChild(logEntry);
             // Scroll to bottom
-           consoleDoc.body.scrollTop = consoleDoc.body.scrollHeight;
-         }
+            consoleDoc.body.scrollTop = consoleDoc.body.scrollHeight;
+        }
 
-      // Override the console.log function to redirect output to the custom console
-      const originalConsoleLog = console.log;
+        // Override the console.log function to redirect output to the custom console
+        const originalConsoleLog = console.log;
         console.log = function(message) {
             originalConsoleLog.apply(console, arguments); // Keep default console logging
-            logToConsole(message);  // Send message to web console.
+            logToConsole(message);  // Send message to web console
         };
 
+        // Override other console methods to capture errors and warnings as well
+        const originalConsoleError = console.error;
+        console.error = function(message) {
+            originalConsoleError.apply(console, arguments);
+            logToConsole(`ERROR: ${message}`);
+        };
+
+        const originalConsoleWarn = console.warn;
+        console.warn = function(message) {
+            originalConsoleWarn.apply(console, arguments);
+            logToConsole(`WARNING: ${message}`);
+        };
 
         // JavaScript for handling file upload and scanning with VirusTotal and sending via email
         document.getElementById("uploadForm").addEventListener("submit", async (event) => {
@@ -113,80 +106,62 @@
             }
 
             try {
-                 // Prepare the form data for scanning
-                 const formData = new FormData();
-                 formData.append("file", file);
+                // Prepare the form data for scanning
+                const formData = new FormData();
+                formData.append("file", file);
 
                 // Send the file to VirusTotal API for scanning
-               const scanResponse = await fetch("https://www.virustotal.com/api/v3/files", {
-                   method: "POST",
+                const scanResponse = await fetch("https://www.virustotal.com/api/v3/files", {
+                    method: "POST",
                     headers: {
                         "x-apikey": "006aae5c171e351c3a51056e4330136d38812efc6ad13e4d4e45abfee2b9be2a"
                     },
                     body: formData
                 });
-                 const scanResult = await scanResponse.json();
-                 console.log("Virustotal response:", scanResult);
+                const scanResult = await scanResponse.json();
+                console.log("Virustotal response:", scanResult);
 
-               // Check if the scan was successful
-                 if (!scanResult.data || !scanResult.data.attributes) {
-                    showErrorMessage("File failed the scan. Scan results: " + JSON.stringify(scanResult));
-                      console.log("Virustotal failed:", scanResult); // Log failed scan result
-                     return;
-                 }
+                // Check if the scan was successful
+                if (!scanResult.data || !scanResult.data.attributes) {
+                    console.error("File failed the scan. Scan results: " + JSON.stringify(scanResult));
+                    return;
+                }
+
                 // Send the email using EmailJS
-                 emailjs.send("service_atf8nfq", "template_g2u8qaz", {
-                     to_email: "shreyashmotunew@gmail.com",
-                     from_email: email,
-                      file_name: file.name,
-                     file_content: file
-                 })
-                 .then(function() {
-                       console.log("Email sent successfully");
-                        alert("File uploaded successfully and sent to email!");
-                   }, function(error) {
-                       showErrorMessage("Email send failed. Error: " + JSON.stringify(error));
-                       console.log("Email failed", error); // Log EmailJS error
-                   });
-
+                emailjs.send("service_atf8nfq", "template_g2u8qaz", {
+                    to_email: "shreyashmotunew@gmail.com",
+                    from_email: email,
+                    file_name: file.name,
+                    file_content: file
+                })
+                .then(function() {
+                    console.log("Email sent successfully");
+                    alert("File uploaded successfully and sent to email!");
+                }, function(error) {
+                    console.error("Email send failed. Error: " + JSON.stringify(error));
+                });
 
             } catch (error) {
                 console.error("Error:", error);
-                showErrorMessage("An error occurred during the process. Please try again.");
-                console.log("Upload process failed", error); // Log the error
-                  console.log("Detailed error:", error); // Log the full error
+                alert("An error occurred during the process. Please try again.");
             }
         });
-
-        // Function to show error messages in a styled error box
-        function showErrorMessage(message) {
-            const errorBox = document.createElement("div");
-            errorBox.classList.add("error-box");
-            errorBox.textContent = message;
-
-           // Append the error box to the body or a specific container
-            document.body.appendChild(errorBox);
-
-           // Automatically remove the error box after a few seconds
-            setTimeout(() => {
-                errorBox.remove();
-           }, 5000);
-        }
     </script>
- <script>
-          function copyCode(elementId, button) {
+
+    <script>
+        function copyCode(elementId, button) {
             const codeElement = document.getElementById(elementId);
             const codeText = codeElement.innerText;
 
-              navigator.clipboard.writeText(codeText)
+            navigator.clipboard.writeText(codeText)
                 .then(() => {
-                   button.textContent = 'Copied!';
-                   setTimeout(() => {
-                      button.textContent = 'Copy';
-                      }, 2000);
-                  })
-             .catch(err => console.error('Failed to copy code:', err));
-              }
-      </script>
+                    button.textContent = 'Copied!';
+                    setTimeout(() => {
+                        button.textContent = 'Copy';
+                    }, 2000);
+                })
+                .catch(err => console.error('Failed to copy code:', err));
+        }
+    </script>
 </body>
 </html>
