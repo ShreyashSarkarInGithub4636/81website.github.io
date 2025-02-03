@@ -3,165 +3,81 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upload .pkg File</title>
+    <title>81manorg Linux - Official Homepage</title>
     <style>
-        /* Style for the error message box */
-        body { font-family: sans-serif; margin: 20px; }
-        #content-area { margin-top: 20px; border: 1px solid #ccc; padding: 10px;}
-        pre { background-color: #f4f4f4; padding: 10px; overflow-x: auto; position: relative; }
-        pre button { position: absolute; top: 5px; right: 5px; background-color: #ddd; border: none; padding: 5px 8px; cursor: pointer; font-size: 0.8em; }
-        pre button:hover { background-color: #ccc; }
-        #console-iframe {
-            width: 100%; /* Full width */
-            height: 300px; /* Fixed height for the console */
-            border: 1px solid #ccc; /* Add a border */
-            margin-top: 20px;  /* Add some top margin */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1, h2 {
+            text-align: center;
+        }
+        .info {
+            margin-top: 20px;
+            padding: 10px;
+            background: #e0e0e0;
+            border-radius: 5px;
+        }
+        .download {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .download a {
+            display: inline-block;
+            padding: 10px 15px;
+            background: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        .download a:hover {
+            background: #0056b3;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 14px;
         }
     </style>
 </head>
 <body>
-    <h1>Upload Your .pkg File</h1>
-    <form id="uploadForm">
-        <label for="email">Email:</label>
-        <input type="email" id="email" name="email" required>
-        <br><br>
-        <label for="pkgFile">Select .pkg file:</label>
-        <input type="file" id="pkgFile" name="pkgFile" accept=".pkg" required>
-        <br><br>
-        <button type="submit">Upload</button>
-    </form>
-   <br>
-    <button id="loadPkgGuide">Show Package Creation Guide</button>
-   <div id="content-area"></div>
-   <iframe id="console-iframe"></iframe>
+    <div class="container">
+        <h1>Welcome to the official Homepage of 81manorg Linux</h1>
+        <p>A lightweight independent Linux distro made from scratch (not entirely, though).</p>
 
-    <script>
-        document.getElementById("loadPkgGuide").addEventListener("click", function() {
-            fetch("81manpkg.html")
-                .then(response => response.text())
-                .then(data => {
-                    document.getElementById("content-area").innerHTML = data;
-                })
-                .catch(error => console.error("Error fetching the package guide:", error));
-        });
+        <h2>Information about 81manorg Linux</h2>
+        <div class="info">
+            <p><strong>Libc:</strong> musl v1.2.5</p>
+            <p><strong>Kernel Version:</strong> Linux 6.13.0</p>
+            <p><strong>Userland:</strong> BusyBox, sudo (rewritten in busybox-ash), sbase, util-linux, genfstab (Arch Linux), chroot (Arch Linux, using real-chroot and arch-chroot), udev (Gentoo's eudev), X11 (compiled entirely from scratch).</p>
+            <p><strong>Window Manager:</strong> JWM</p>
+            <p><strong>Device Manager:</strong> udev (Gentoo's eudev)</p>
+            <p><strong>Shell:</strong> sh (BusyBox ash with extended Bash features)</p>
+            <p><strong>Web Browser:</strong> surf</p>
+            <p><strong>Text Editor:</strong> Geany</p>
+            <p><strong>Initramfs Generator:</strong> genbootcpio (written entirely in bash-syntaxed busybox-ash)</p>
+            <p><strong>Kernel Updates:</strong> Uses <code>updatekernel</code>, which functions similarly to Gentoo’s <code>genkernel</code> but updates the kernel instead.</p>
+        </div>
 
-        // Get the iframe for the console
-        const consoleIframe = document.getElementById('console-iframe');
-        // Create a document object for the iframe
-        const consoleDoc = consoleIframe.contentDocument || consoleIframe.contentWindow.document;
+        <div class="download">
+            <h2>Download 81manorg Linux</h2>
+            <a href="downloads/81manorg-latest.iso">Download Latest ISO</a>
+        </div>
 
-        // Set up the iframe document
-        consoleDoc.body.style.backgroundColor = '#222';
-        consoleDoc.body.style.color = '#fff';
-        consoleDoc.body.style.fontFamily = 'monospace';
-        consoleDoc.body.style.padding = '10px';
-        consoleDoc.body.style.overflowY = 'scroll';
-        consoleDoc.body.style.whiteSpace = 'pre-wrap';
-
-        // Function to log messages to the console
-        function logToConsole(message) {
-            const logEntry = document.createElement('div');
-            logEntry.textContent = message;
-            consoleDoc.body.appendChild(logEntry);
-            // Scroll to bottom
-            consoleDoc.body.scrollTop = consoleDoc.body.scrollHeight;
-        }
-
-        // Override the console.log function to redirect output to the custom console
-        const originalConsoleLog = console.log;
-        console.log = function(message) {
-            originalConsoleLog.apply(console, arguments); // Keep default console logging
-            logToConsole(message);  // Send message to web console
-        };
-
-        // Override other console methods to capture errors and warnings as well
-        const originalConsoleError = console.error;
-        console.error = function(message) {
-            originalConsoleError.apply(console, arguments);
-            logToConsole(`ERROR: ${message}`);
-        };
-
-        const originalConsoleWarn = console.warn;
-        console.warn = function(message) {
-            originalConsoleWarn.apply(console, arguments);
-            logToConsole(`WARNING: ${message}`);
-        };
-
-        // JavaScript for handling file upload and scanning with VirusTotal and sending via email
-        document.getElementById("uploadForm").addEventListener("submit", async (event) => {
-            event.preventDefault();
-
-            const email = document.getElementById("email").value;
-            const fileInput = document.getElementById("pkgFile");
-            const file = fileInput.files[0];
-
-            if (!file) {
-                alert("Please select a .pkg file to upload.");
-                return;
-            }
-
-            if (file.type !== "" && !file.name.endsWith(".pkg")) {
-                alert("Only .pkg files are allowed.");
-                return;
-            }
-
-            try {
-                // Prepare the form data for scanning
-                const formData = new FormData();
-                formData.append("file", file);
-
-                // Send the file to VirusTotal API for scanning
-                const scanResponse = await fetch("https://www.virustotal.com/api/v3/files", {
-                    method: "POST",
-                    headers: {
-                        "x-apikey": "006aae5c171e351c3a51056e4330136d38812efc6ad13e4d4e45abfee2b9be2a"
-                    },
-                    body: formData
-                });
-                const scanResult = await scanResponse.json();
-                console.log("Virustotal response:", scanResult);
-
-                // Check if the scan was successful
-                if (!scanResult.data || !scanResult.data.attributes) {
-                    console.error("File failed the scan. Scan results: " + JSON.stringify(scanResult));
-                    return;
-                }
-
-                // Send the email using EmailJS
-                emailjs.send("service_atf8nfq", "template_g2u8qaz", {
-                    to_email: "shreyashmotunew@gmail.com",
-                    from_email: email,
-                    file_name: file.name,
-                    file_content: file
-                })
-                .then(function() {
-                    console.log("Email sent successfully");
-                    alert("File uploaded successfully and sent to email!");
-                }, function(error) {
-                    console.error("Email send failed. Error: " + JSON.stringify(error));
-                });
-
-            } catch (error) {
-                console.error("Error:", error);
-                alert("An error occurred during the process. Please try again.");
-            }
-        });
-    </script>
-
-    <script>
-        function copyCode(elementId, button) {
-            const codeElement = document.getElementById(elementId);
-            const codeText = codeElement.innerText;
-
-            navigator.clipboard.writeText(codeText)
-                .then(() => {
-                    button.textContent = 'Copied!';
-                    setTimeout(() => {
-                        button.textContent = 'Copy';
-                    }, 2000);
-                })
-                .catch(err => console.error('Failed to copy code:', err));
-        }
-    </script>
+        <div class="footer">
+            <p><a href="wiki/index.html">Visit the 81manorg Linux Wiki</a></p>
+            <p>&copy; 2025 81manorg Linux Team</p>
+        </div>
+    </div>
 </body>
 </html>
