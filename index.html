@@ -58,7 +58,7 @@
         <h2>Information about 81manorg Linux</h2>
         <div class="info">
             <p><strong>Libc:</strong> musl v1.2.5</p>
-            <p><strong>Kernel Version:</strong> <strong> <span id=kver></span> </strong> </p>
+            <p><strong>Kernel Version:</strong> <strong> <span id="kver"></span> </strong> </p>
             <p><strong>Userland:</strong> BusyBox, sudo (rewritten in busybox-ash), sbase, util-linux, genfstab (Arch Linux), chroot (Arch Linux, using real-chroot and arch-chroot), udev (Gentoo's eudev), X11 (compiled entirely from scratch).</p>
             <p><strong>Window Manager:</strong> JWM</p>
             <p><strong>Device Manager:</strong> udev (Gentoo's eudev)</p>
@@ -76,8 +76,8 @@
 
         <div class="footer">
             <p><a href="wiki/index.html">Visit the 81manorg Linux Wiki</a></p>
-            <p>&copy; 2025 Shreyash. </p>
-            <p> CMM (Countries Mapping Mirth) also agreed to help me on making 81manorg Linux</p>
+            <p>&copy; 2025 Shreyash.</p>
+            <p>CMM (Countries Mapping Mirth) also agreed to help me on making 81manorg Linux</p>
         </div>
     </div>
     <script>
@@ -90,16 +90,19 @@
                     throw new Error('Failed to fetch kver');
                 }
 
-                // Convert the response to text (which will be the content of k.latest)
+                // Convert the response to text (which will be the content of kver)
                 const kernelVersion = await response.text();
                 
                 // Display the kernel version in the HTML
-                document.getElementById('kver').innerText = kver;
+                document.getElementById('kver').innerText = kernelVersion;
             } catch (error) {
                 console.error('Error fetching kernel version:', error);
                 document.getElementById('kver').innerText = 'Error loading kernel version';
             }
         }
+
+        // Call the function to fetch kernel version on page load
+        fetchKernelVersion();
     </script>
 </body>
 </html>
