@@ -83,21 +83,21 @@
     <script>
         async function fetchKernelVersion() {
             try {
-                // Use a GET request to fetch the k.latest file from the same directory as the current HTML
-                const response = await fetch('k.latest');
+                // Use a GET request to fetch the kver file from the same directory as the current HTML
+                const response = await fetch('kver');
                 
                 if (!response.ok) {
-                    throw new Error('Failed to fetch k.latest');
+                    throw new Error('Failed to fetch kver');
                 }
 
                 // Convert the response to text (which will be the content of k.latest)
                 const kernelVersion = await response.text();
                 
                 // Display the kernel version in the HTML
-                document.getElementById('kernelVersion').innerText = kernelVersion;
+                document.getElementById('kver').innerText = kver;
             } catch (error) {
                 console.error('Error fetching kernel version:', error);
-                document.getElementById('kernelVersion').innerText = 'Error loading kernel version';
+                document.getElementById('kver').innerText = 'Error loading kernel version';
             }
         }
     </script>
