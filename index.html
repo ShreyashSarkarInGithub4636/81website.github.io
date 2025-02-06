@@ -84,7 +84,7 @@
         async function fetchKernelVersion() {
             try {
                 // Use a GET request to fetch the kver file from the same directory as the current HTML
-                const response = await fetch('kver');
+                const response = await fetch('https://raw.githubusercontent.com/ShreyashSarkarInGithub4636/81website.github.io/refs/heads/main/kver');
                 
                 if (!response.ok) {
                     throw new Error('Failed to fetch kver');
